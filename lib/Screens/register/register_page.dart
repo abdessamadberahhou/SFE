@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:date_field/date_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5,6 +7,7 @@ import 'package:iconly/iconly.dart';
 import 'package:sfe_courrier/Model/Network/authentication.dart';
 import 'package:sfe_courrier/Screens/components/achivment.dart';
 import 'package:sfe_courrier/Screens/components/validators.dart';
+import 'package:sfe_courrier/Screens/login/login_page.dart';
 
 import '../../Objects/user.dart';
 import '../components/constatnts.dart';
@@ -30,8 +33,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _numTeleController = TextEditingController();
   final TextEditingController _motDePasseController = TextEditingController();
   final TextEditingController _confirmerMotDePasseController = TextEditingController();
-  int? _resultCode;
-  String? _resultMessage;
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -233,13 +234,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   hintText: "Confirmer mot de passe",
                                   labelText: "Confirmer mot de passe *",
                                   labelColor: Colors.white,
-                                  validator: (value) {
-                                    if (true) {
-                                      return 'verifié les mots de passes';
-                                    } else {
-                                      return null;
-                                    }
-                                  }),
+                              ),
                               SizedBox(
                                 height: MediaQuery.of(context).size.height *0.050,
                               ),
@@ -262,24 +257,28 @@ class _RegisterPageState extends State<RegisterPage> {
                                     ){
                                       showAchievementView(context, false, 'Respecté les types des champs svp');}
                                     else{
-                                      User user = User() ;
-                                      user.LastName = _nomController.text;
-                                      user.FirstName = _prenomController.text;
-                                      user.Email = _emailController.text;
-                                      user.Cin = _cinController.text;
-                                      user.NumTele = _numTeleController.text;
-                                      user.BirthDay = newDate.toString().split(' ').first;
-                                      user.Password = _motDePasseController.text;
-                                      user.Avatar = defaultAvatar;
-                                      var result = await auth.RegisterUser(user);
-                                      if(result.statusCode == 200){
-                                        showAchievementView(context, true, result.message);
+                                      if(_emailController.text.isValidEmail()){
+                                        User user = User() ;
+                                        user.LastName = _nomController.text;
+                                        user.FirstName = _prenomController.text;
+                                        user.Email = _emailController.text;
+                                        user.Cin = _cinController.text;
+                                        user.NumTele = _numTeleController.text;
+                                        user.BirthDay = newDate.toString().split(' ').first;
+                                        user.Password = _motDePasseController.text;
+                                        user.Avatar = defaultAvatar;
+                                        var result = await auth.RegisterUser(user);
+                                        if(result.statusCode == 200){
+                                          showAchievementView(context, true, jsonDecode(result.message));
+                                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context)=>LoginPage()), (route) => false);
+                                        }else{
+                                          showAchievementView(context, false, jsonDecode(result.message)['errorMessage']);
+                                        }
                                       }else{
-                                        showAchievementView(context, false, result.message);
+                                        showAchievementView(context, false, 'Entrer un email validé');
                                       }
                                     }
                                   }
-                                //print(_nomController.text + '     ' + _prenomController.text + '     ' + _emailController.text + '     ' + _cinController.text + '     ' + newDate.toString() + '     ' + _numTeleController.text + '     ' + _motDePasseController.text + '     ' + _confirmerMotDePasseController.text);
                                 },
                                 text: "S'incrire",
                                 color: Colors.white,

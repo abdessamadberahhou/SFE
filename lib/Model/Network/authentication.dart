@@ -74,7 +74,7 @@ class Authentication{
     }
   }
   Future<AddResultModel> RegisterUser(User user) async{
-    var url = Uri.parse('$api/Authentication/register');
+    var url = Uri.parse('https://couriermanager.azurewebsites.net/api/Authentication/register');
     var response = await http.post(url,headers: {
       "Content-type":"application/json",
       "Accept":"application/json"
@@ -88,7 +88,7 @@ class Authentication{
       "confirmPassword": user.Password,
       "numTele": user.NumTele
     })) ;
-    return AddResultModel(200, 'message');
+    return AddResultModel(response.statusCode, response.body);
   }
   Future<void> Logout(String userId, context) async{
     Uri link = Uri.parse('$api/Authentication/logout');
